@@ -1,0 +1,32 @@
+databases:
+  - name: expense-tracker-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: expense-tracker-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase: { name: expense-tracker-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: expense-tracker-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: expense-tracker-db, property: database }
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase: { name: expense-tracker-db, property: user }
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase: { name: expense-tracker-db, property: password }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://your-app.vercel.app"
