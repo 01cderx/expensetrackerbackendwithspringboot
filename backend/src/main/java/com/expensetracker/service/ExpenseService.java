@@ -2,6 +2,7 @@ package com.expensetracker.service;
 
 import com.expensetracker.dto.ExpenseDTO;
 import com.expensetracker.dto.ExpenseSummaryDTO;
+import com.expensetracker.dto.PagedResponse;
 import com.expensetracker.exception.ResourceNotFoundException;
 import com.expensetracker.model.Category;
 import com.expensetracker.model.Expense;
@@ -10,6 +11,10 @@ import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.ExpenseRepository;
 import com.expensetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,6 +37,24 @@ public class ExpenseService {
         return expenseRepository.findByUserIdOrderByDateDesc(userId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public PagedResponse<ExpenseDTO> getPaged(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        Page<Expense> result = expenseRepository.findByUserId(userId, pageable);
+
+        List<ExpenseDTO> content = result.getContent().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(
+                content,
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages(),
+                result.isLast()
+        );
     }
 
     public ExpenseDTO getById(Long userId, Long expenseId) {
