@@ -23,17 +23,21 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
-    public ResponseEntity<List<ExpenseDTO>> getAll(@AuthenticationPrincipal UserPrincipal principal,
-                                                     @RequestParam(required = false) Long categoryId,
-                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public ResponseEntity<?> getAll(@AuthenticationPrincipal UserPrincipal principal,
+                                     @RequestParam(required = false) Long categoryId,
+                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                     @RequestParam(required = false) Integer page,
+                                     @RequestParam(required = false) Integer size) {
         if (categoryId != null) {
             return ResponseEntity.ok(expenseService.getByCategory(principal.getId(), categoryId));
         }
         if (startDate != null && endDate != null) {
             return ResponseEntity.ok(expenseService.getByDateRange(principal.getId(), startDate, endDate));
         }
-        return ResponseEntity.ok(expenseService.getAllForUser(principal.getId()));
+        int resolvedPage = page != null ? page : 0;
+        int resolvedSize = size != null ? size : 20;
+        return ResponseEntity.ok(expenseService.getPaged(principal.getId(), resolvedPage, resolvedSize));
     }
 
     @GetMapping("/{id}")
