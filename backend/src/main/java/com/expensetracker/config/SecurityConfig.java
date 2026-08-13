@@ -2,6 +2,7 @@ package com.expensetracker.config;
 
 import com.expensetracker.security.CustomUserDetailsService;
 import com.expensetracker.security.JwtAuthenticationFilter;
+import com.expensetracker.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
