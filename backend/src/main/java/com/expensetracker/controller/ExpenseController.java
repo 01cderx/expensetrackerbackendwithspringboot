@@ -2,6 +2,8 @@ package com.expensetracker.controller;
 
 import com.expensetracker.dto.ExpenseDTO;
 import com.expensetracker.dto.ExpenseSummaryDTO;
+import com.expensetracker.dto.PagedResponse;
+import com.expensetracker.dto.ReportDTO;
 import com.expensetracker.security.UserPrincipal;
 import com.expensetracker.service.ExpenseService;
 import jakarta.validation.Valid;
@@ -13,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -23,21 +24,19 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
-    public ResponseEntity<?> getAll(@AuthenticationPrincipal UserPrincipal principal,
-                                     @RequestParam(required = false) Long categoryId,
-                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                     @RequestParam(required = false) Integer page,
-                                     @RequestParam(required = false) Integer size) {
-        if (categoryId != null) {
-            return ResponseEntity.ok(expenseService.getByCategory(principal.getId(), categoryId));
-        }
-        if (startDate != null && endDate != null) {
-            return ResponseEntity.ok(expenseService.getByDateRange(principal.getId(), startDate, endDate));
-        }
-        int resolvedPage = page != null ? page : 0;
-        int resolvedSize = size != null ? size : 20;
-        return ResponseEntity.ok(expenseService.getPaged(principal.getId(), resolvedPage, resolvedSize));
+    public ResponseEntity<PagedResponse<ExpenseDTO>> getAll(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(
+                expenseService.getPaged(principal.getId(), page, size, categoryId, type, search, startDate, endDate)
+        );
     }
 
     @GetMapping("/{id}")
@@ -69,5 +68,16 @@ public class ExpenseController {
     @GetMapping("/summary")
     public ResponseEntity<ExpenseSummaryDTO> getSummary(@AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(expenseService.getSummary(principal.getId()));
+    }
+
+    /**
+     * Monthly report: /api/expenses/reports?year=2026&month=8
+     * Yearly report:  /api/expenses/reports?year=2026
+     */
+    @GetMapping("/reports")
+    public ResponseEntity<ReportDTO> getReport(@AuthenticationPrincipal UserPrincipal principal,
+                                                @RequestParam int year,
+                                                @RequestParam(required = false) Integer month) {
+        return ResponseEntity.ok(expenseService.getReport(principal.getId(), year, month));
     }
 }
