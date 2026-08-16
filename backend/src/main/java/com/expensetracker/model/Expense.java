@@ -41,6 +41,14 @@ public class Expense {
     @JsonIgnore
     private User user;
 
+    /**
+     * Defaults existing rows to EXPENSE at the database level, so this migrates
+     * cleanly on a production database that already has expense rows in it.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(20) default 'EXPENSE'")
+    private TransactionType type = TransactionType.EXPENSE;
+
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }
