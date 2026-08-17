@@ -29,6 +29,9 @@ public class ExpenseDTO {
     private String categoryName;
     private String categoryColor;
 
+    private Long paymentMethodId;
+    private String paymentMethodName;
+
     @Pattern(regexp = "INCOME|EXPENSE", message = "Type must be INCOME or EXPENSE")
     private String type = "EXPENSE";
 }
