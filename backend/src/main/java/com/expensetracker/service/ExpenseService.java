@@ -14,6 +14,7 @@ import com.expensetracker.model.User;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.ExpenseRepository;
 import com.expensetracker.repository.ExpenseSpecifications;
+import com.expensetracker.repository.PaymentMethodRepository;
 import com.expensetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final CategoryRepository categoryRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
     private final UserRepository userRepository;
 
     public ExpenseDTO getById(Long userId, Long expenseId) {
@@ -66,6 +68,12 @@ public class ExpenseService {
             expense.setCategory(category);
         }
 
+        if (dto.getPaymentMethodId() != null) {
+            com.expensetracker.model.PaymentMethod paymentMethod = paymentMethodRepository.findByIdAndUserId(dto.getPaymentMethodId(), userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment method not found"));
+            expense.setPaymentMethod(paymentMethod);
+        }
+
         return toDTO(expenseRepository.save(expense));
     }
 
@@ -85,6 +93,14 @@ public class ExpenseService {
             expense.setCategory(category);
         } else {
             expense.setCategory(null);
+        }
+
+        if (dto.getPaymentMethodId() != null) {
+            com.expensetracker.model.PaymentMethod paymentMethod = paymentMethodRepository.findByIdAndUserId(dto.getPaymentMethodId(), userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment method not found"));
+            expense.setPaymentMethod(paymentMethod);
+        } else {
+            expense.setPaymentMethod(null);
         }
 
         return toDTO(expenseRepository.save(expense));
@@ -268,6 +284,10 @@ public class ExpenseService {
             dto.setCategoryId(expense.getCategory().getId());
             dto.setCategoryName(expense.getCategory().getName());
             dto.setCategoryColor(expense.getCategory().getColor());
+        }
+        if (expense.getPaymentMethod() != null) {
+            dto.setPaymentMethodId(expense.getPaymentMethod().getId());
+            dto.setPaymentMethodName(expense.getPaymentMethod().getName());
         }
         return dto;
     }
