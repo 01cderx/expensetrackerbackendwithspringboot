@@ -6,6 +6,7 @@ import com.expensetracker.dto.PagedResponse;
 import com.expensetracker.dto.ReportDTO;
 import com.expensetracker.security.UserPrincipal;
 import com.expensetracker.service.ExpenseService;
+import com.expensetracker.service.RecurringExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+    private final RecurringExpenseService recurringExpenseService;
 
     @GetMapping
     public ResponseEntity<PagedResponse<ExpenseDTO>> getAll(
@@ -34,6 +36,7 @@ public class ExpenseController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
+        recurringExpenseService.processDue(principal.getId());
         return ResponseEntity.ok(
                 expenseService.getPaged(principal.getId(), page, size, categoryId, type, search, startDate, endDate)
         );
@@ -67,6 +70,7 @@ public class ExpenseController {
 
     @GetMapping("/summary")
     public ResponseEntity<ExpenseSummaryDTO> getSummary(@AuthenticationPrincipal UserPrincipal principal) {
+        recurringExpenseService.processDue(principal.getId());
         return ResponseEntity.ok(expenseService.getSummary(principal.getId()));
     }
 
