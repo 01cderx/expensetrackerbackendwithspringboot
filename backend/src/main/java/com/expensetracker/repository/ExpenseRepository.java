@@ -14,6 +14,8 @@ import java.util.Optional;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long>, JpaSpecificationExecutor<Expense> {
 
+    boolean existsByAccountIdAndUserId(Long accountId, Long userId);
+    
     Optional<Expense> findByIdAndUserId(Long id, Long userId);
 
     List<Expense> findByUserIdAndDateBetweenOrderByDateDesc(Long userId, LocalDate start, LocalDate end);
